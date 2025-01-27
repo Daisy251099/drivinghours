@@ -310,16 +310,47 @@
             const bEnd = timeToMinutes(breakEnd);
             const end = timeToMinutes(endTime);
 
-            // Calculate session totals (before stand time deduction)
-            const firstSessionTotal = bStart - start;
-            const secondSessionTotal = end - bEnd;
-            const overtimeSessionTotal = overtimeStart && overtimeEnd ? timeToMinutes(overtimeEnd) - timeToMinutes(overtimeStart) : 0;
+            // Adjust times that go past midnight
+            let adjustedBStart = bStart;
+            if (adjustedBStart < start) {
+                adjustedBStart += 24 * 60; // Add 24 hours in minutes
+            }
+
+            let adjustedBEnd = bEnd;
+            if (adjustedBEnd < start) {
+                adjustedBEnd += 24 * 60;
+            }
+
+            let adjustedEnd = end;
+            if (adjustedEnd < start) {
+                adjustedEnd += 24 * 60;
+            }
+
+            // Calculate session totals using adjusted times
+            const firstSessionTotal = adjustedBStart - start;
+            const secondSessionTotal = adjustedEnd - adjustedBEnd;
+            
+            // Handle overtime past midnight
+            let overtimeSessionTotal = 0;
+            if (overtimeStart && overtimeEnd) {
+                let oStart = timeToMinutes(overtimeStart);
+                let oEnd = timeToMinutes(overtimeEnd);
+                
+                if (oStart < start) {
+                    oStart += 24 * 60;
+                }
+                if (oEnd < start) {
+                    oEnd += 24 * 60;
+                }
+                
+                overtimeSessionTotal = oEnd - oStart;
+            }
 
             // Calculate actual driving times (with stand time deducted)
             const firstSession = firstSessionTotal - standTime1;
             const secondSession = secondSessionTotal - standTime2;
             const overtimeSession = overtimeSessionTotal - overtimeStand;
-            const breakTime = bEnd - bStart;
+            const breakTime = adjustedBEnd - adjustedBStart;
 
             // Calculate total driving time
             let totalDrivingMinutes = firstSession + secondSession + (overtimeSession > 0 ? overtimeSession : 0);
@@ -329,7 +360,7 @@
             const isSecondSpellBreach = secondSessionTotal > maxDrivingMinutes;
             const isBreakBreach = breakTime < requiredBreakTime;
             const isOvertimeBreach = overtimeSessionTotal > maxDrivingMinutes;
-            const isOvertimeGapBreach = overtimeStart && overtimeEnd ? timeToMinutes(overtimeStart) < (end + minOvertimeGap) : false;
+            const isOvertimeGapBreach = overtimeStart && overtimeEnd ? timeToMinutes(overtimeStart) < (adjustedEnd + minOvertimeGap) : false;
             const isTotalTimeBreach = (firstSessionTotal + secondSessionTotal + overtimeSessionTotal) > maxTotalDrivingMinutes;
 
             // Console logging for debugging
@@ -375,7 +406,10 @@
 
         function timeToMinutes(timeString) {
             const [hours, minutes] = timeString.split(':').map(Number);
-            return (hours * 60) + minutes;
+            let totalMinutes = (hours * 60) + minutes;
+            
+            // If this is a later time being compared to an earlier time, assume it's the next day
+            return totalMinutes;
         }
 
         function minutesToTimeString(minutes) {
