@@ -2,421 +2,616 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Driving Hours Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Professional Driving Hours Tracker</title>
     <style>
         :root {
-            --primary-color: #2196F3;
-            --success-color: #4CAF50;
-            --warning-color: #f44336;
-            --background-color: #f5f5f5;
-            --card-background: #ffffff;
-            --text-color: #333333;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --bg-body: #f3f4f6;
+            --bg-card: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --mobile-bar-height: 70px;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-body: #111827;
+                --bg-card: #1f2937;
+                --text-main: #f9fafb;
+                --text-muted: #9ca3af;
+                --border: #374151;
+            }
         }
 
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            background-color: var(--background-color);
-            color: var(--text-color);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
             padding: 20px;
+            padding-bottom: calc(20px + var(--mobile-bar-height)); /* Space for sticky footer */
+            line-height: 1.5;
+            transition: background-color 0.3s;
         }
 
         .container {
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
         }
 
+        @media(min-width: 768px) {
+            .container {
+                grid-template-columns: 1.2fr 0.8fr; /* Inputs wider than results */
+                align-items: start;
+            }
+            body { padding-bottom: 20px; } /* Reset padding on desktop */
+        }
+
+        @media(max-width: 767px) {
+            body { padding: 12px; padding-bottom: calc(12px + var(--mobile-bar-height)); }
+            .container { gap: 16px; }
+            .card { padding: 16px; }
+            h1 { font-size: 1.25rem; margin-bottom: 16px; }
+        }
+
+        /* Card Styling */
         .card {
-            background: var(--card-background);
-            border-radius: 10px;
-            padding: 25px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        h1, h2 { margin-bottom: 20px; font-weight: 700; letter-spacing: -0.025em; }
+        h1 { font-size: 1.5rem; color: var(--primary); }
+        h2 { font-size: 1.25rem; }
+
+        /* Form Elements */
+        .section-title {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
             margin-bottom: 20px;
         }
 
-        h1 {
-            color: var(--primary-color);
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 2rem;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
+        .form-group { margin-bottom: 12px; }
+        .form-group.full { grid-column: 1 / -1; }
 
         label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
             font-weight: 500;
-            color: var(--text-color);
+            color: var(--text-muted);
         }
 
-        /* Consistent input styling */
-        input[type="time"], 
-        input[type="number"] {
+        input {
             width: 100%;
-            height: 48px;
-            padding: 0 12px;
-            border: 2px solid #ddd;
-            border-radius: 6px;
-            font-size: 16px;
-            transition: all 0.3s ease;
+            height: 44px; /* Larger touch target */
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-body);
+            color: var(--text-main);
+            font-size: 16px; /* Prevents iOS zoom */
+            transition: border-color 0.2s, box-shadow 0.2s;
             -webkit-appearance: none;
-            background-color: white;
-            box-sizing: border-box;
-            margin: 0;
-            color: var(--text-color);
         }
 
-        /* Remove all browser-specific styling */
-        input[type="time"]::-webkit-calendar-picker-indicator,
-        input[type="time"]::-webkit-inner-spin-button,
-        input[type="time"]::-webkit-clear-button,
-        input[type="number"]::-webkit-inner-spin-button,
-        input[type="number"]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            display: none;
-            margin: 0;
-        }
-
-        /* Consistent focus state */
-        input[type="time"]:focus, 
-        input[type="number"]:focus {
-            border-color: var(--primary-color);
+        input:focus {
             outline: none;
-            box-shadow: 0 0 0 1px var(--primary-color);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
-        /* Button styling */
-        button {
-            width: 100%;
-            height: 48px;
-            padding: 0 15px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: 600;
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 20px;
+            height: 44px;
+            border-radius: 8px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
+            border: none;
+            transition: all 0.2s;
+            width: 100%;
+            font-size: 1rem;
         }
 
-        button:hover {
-            background-color: #1976D2;
+        .btn-secondary {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:active, .btn-secondary:hover { background-color: var(--border); }
+
+        .btn-reset {
+            margin-top: 10px;
+            background-color: transparent;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            height: auto;
+        }
+        .btn-reset:hover { text-decoration: underline; color: var(--danger); }
+
+        /* Results & Status Badges */
+        .result-item {
+            padding: 14px;
+            border-radius: 8px;
+            background: var(--bg-body);
+            margin-bottom: 12px;
+            border-left: 4px solid var(--border);
         }
 
-        #result {
-            margin-top: 30px;
+        .result-item.success { border-left-color: var(--success); background: rgba(16, 185, 129, 0.1); }
+        .result-item.danger { border-left-color: var(--danger); background: rgba(239, 68, 68, 0.1); }
+        .result-item.warning { border-left-color: var(--warning); background: rgba(245, 158, 11, 0.1); }
+        .result-item.info { border-left-color: var(--info); background: rgba(59, 130, 246, 0.1); }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
         }
 
-        #result h3 {
-            color: var(--primary-color);
-            margin-bottom: 15px;
+        .result-label { font-weight: 600; font-size: 0.9rem; }
+        .result-value { font-family: monospace; font-size: 1.1rem; font-weight: 700; }
+        
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 99px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-badge.ok { background-color: var(--success); color: white; }
+        .status-badge.breach { background-color: var(--danger); color: white; }
+        .status-badge.info { background-color: var(--info); color: white; }
+
+        .progress-container {
+            height: 6px;
+            background-color: var(--border);
+            border-radius: 3px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: var(--success);
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+        
+        #overtimeSection {
+            transition: all 0.3s ease-in-out;
+            overflow: hidden;
+        }
+        .hidden { display: none; }
+
+        /* Mobile Sticky Footer */
+        .mobile-sticky-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--mobile-bar-height);
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+        
+        @media(min-width: 768px) {
+            .mobile-sticky-bar { display: none; }
         }
 
-        #result p {
-            margin-bottom: 10px;
-            padding: 10px;
-            background-color: rgba(0,0,0,0.03);
-            border-radius: 6px;
+        .sticky-content {
+            display: flex;
+            flex-direction: column;
         }
+        .sticky-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
+        .sticky-value { font-size: 1.25rem; font-weight: 800; color: var(--text-main); font-family: monospace; }
+        .sticky-status { padding: 6px 12px; font-size: 0.9rem; }
 
-        .warning {
-            color: var(--warning-color);
-            font-weight: 500;
-            padding: 10px;
-            background-color: rgba(244,67,54,0.1);
-            border-radius: 6px;
-            margin-bottom: 10px;
-        }
-
-        .ok {
-            color: var(--success-color);
-            font-weight: 500;
-            padding: 10px;
-            background-color: rgba(76,175,80,0.1);
-            border-radius: 6px;
-            margin-bottom: 10px;
-        }
-
-        /* Mobile Responsiveness */
-        @media (max-width: 600px) {
-            body {
-                padding: 10px;
-            }
-
-            .card {
-                padding: 15px;
-            }
-
-            .form-group {
-                margin-bottom: 15px;
-            }
-
-            input[type="time"], 
-            input[type="number"],
-            button {
-                height: 48px;
-                font-size: 16px;
-            }
-        }
-
-        /* Dark mode adjustments */
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --background-color: #1a1a1a;
-                --card-background: #2d2d2d;
-                --text-color: #ffffff;
-            }
-
-            input[type="time"], 
-            input[type="number"] {
-                background-color: #3d3d3d;
-                border-color: #4d4d4d;
-                color: white;
-            }
-
-            input[type="time"]:focus, 
-            input[type="number"]:focus {
-                border-color: var(--primary-color);
-                box-shadow: 0 0 0 1px var(--primary-color);
-            }
-
-            #result p {
-                background-color: rgba(255,255,255,0.05);
-            }
-        }
-
-        .secondary-button {
-            background-color: #757575;
-            width: auto;
-            min-width: 150px;
-        }
-
-        .secondary-button:hover {
-            background-color: #616161;
-        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="card">
-            <h1>Driving Hours Tracker</h1>
-            
-            <div class="form-group">
-                <label for="startTime">First Spell Start Time</label>
-                <input type="time" id="startTime" value="00:00" required>
-            </div>
 
-            <div class="form-group">
-                <label for="breakStart">First Spell End Time</label>
-                <input type="time" id="breakStart" value="00:00" required>
-            </div>
-
-            <div class="form-group">
-                <label for="standTime1">Stand Time in First Spell (minutes)</label>
-                <input type="number" id="standTime1" min="0">
-            </div>
-
-            <div class="form-group">
-                <label for="breakEnd">Second Spell Start Time</label>
-                <input type="time" id="breakEnd" value="00:00" required>
-            </div>
-
-            <div class="form-group">
-                <label for="endTime">Second Spell End Time</label>
-                <input type="time" id="endTime" value="00:00" required>
-            </div>
-
-            <div class="form-group">
-                <label for="standTime2">Stand Time in Second Spell (minutes)</label>
-                <input type="number" id="standTime2" min="0">
-            </div>
-
-            <div id="overtimeSection" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
-                <button onclick="toggleOvertime()" class="secondary-button" style="margin-bottom: 20px;">Add Overtime</button>
-                
-                <div id="overtimeFields" style="display: none;">
-                    <div class="form-group">
-                        <label for="overtimeStart">Overtime Start Time</label>
-                        <input type="time" id="overtimeStart" value="00:00">
-                    </div>
-                    <div class="form-group">
-                        <label for="overtimeEnd">Overtime End Time</label>
-                        <input type="time" id="overtimeEnd" value="00:00">
-                    </div>
-                    <div class="form-group">
-                        <label for="overtimeStand">Stand Time in Overtime (minutes)</label>
-                        <input type="number" id="overtimeStand" min="0">
-                    </div>
+<div class="container">
+    <!-- INPUT SECTION -->
+    <div class="card">
+        <h1>Driving Tracker</h1>
+        
+        <form id="trackerForm">
+            <!-- Spell 1 -->
+            <div class="section-title">First Spell</div>
+            <div class="input-grid">
+                <div class="form-group">
+                    <label for="startTime">Start Time</label>
+                    <input type="time" id="startTime" class="calc-trigger" value="06:00">
+                </div>
+                <div class="form-group">
+                    <label for="breakStart">End Time</label>
+                    <input type="time" id="breakStart" class="calc-trigger" value="11:00">
+                </div>
+                <div class="form-group full">
+                    <label for="standTime1">Stand Time (minutes)</label>
+                    <input type="number" inputmode="numeric" id="standTime1" class="calc-trigger" min="0" placeholder="e.g. 15">
                 </div>
             </div>
 
-            <button onclick="calculateDrivingTime()">Calculate Total Driving Time</button>
-        </div>
+            <!-- Spell 2 -->
+            <div class="section-title">Second Spell</div>
+            <div class="input-grid">
+                <div class="form-group">
+                    <label for="breakEnd">Start Time</label>
+                    <input type="time" id="breakEnd" class="calc-trigger" value="11:45">
+                </div>
+                <div class="form-group">
+                    <label for="endTime">End Time</label>
+                    <input type="time" id="endTime" class="calc-trigger" value="16:00">
+                </div>
+                <div class="form-group full">
+                    <label for="standTime2">Stand Time (minutes)</label>
+                    <input type="number" inputmode="numeric" id="standTime2" class="calc-trigger" min="0" placeholder="e.g. 15">
+                </div>
+            </div>
 
-        <div class="card" id="result"></div>
+            <!-- Overtime Toggle -->
+            <button type="button" id="toggleOvertimeBtn" class="btn btn-secondary">
+                + Add Overtime / 3rd Spell
+            </button>
+
+            <!-- Overtime Section -->
+            <div id="overtimeSection" class="hidden" style="margin-top: 20px;">
+                <div class="section-title">Overtime Spell</div>
+                <div class="input-grid">
+                    <div class="form-group">
+                        <label for="overtimeStart">Start Time</label>
+                        <input type="time" id="overtimeStart" class="calc-trigger">
+                    </div>
+                    <div class="form-group">
+                        <label for="overtimeEnd">End Time</label>
+                        <input type="time" id="overtimeEnd" class="calc-trigger">
+                    </div>
+                    <div class="form-group full">
+                        <label for="overtimeStand">Stand Time (minutes)</label>
+                        <input type="number" inputmode="numeric" id="overtimeStand" class="calc-trigger" min="0">
+                    </div>
+                </div>
+            </div>
+            
+            <button type="button" onclick="resetForm()" class="btn btn-reset">Reset All Fields</button>
+        </form>
     </div>
 
-    <script>
-        function toggleOvertime() {
-            const overtimeFields = document.getElementById('overtimeFields');
-            const button = document.querySelector('.secondary-button');
-            if (overtimeFields.style.display === 'none') {
-                overtimeFields.style.display = 'block';
-                button.textContent = 'Remove Overtime';
-            } else {
-                overtimeFields.style.display = 'none';
-                button.textContent = 'Add Overtime';
-                // Clear overtime inputs
-                document.getElementById('overtimeStart').value = '';
-                document.getElementById('overtimeEnd').value = '';
-                document.getElementById('overtimeStand').value = '0';
+    <!-- RESULTS SECTION -->
+    <div class="card">
+        <h2>Dashboard</h2>
+        <div id="dashboardContent">
+            <!-- Results injected via JS -->
+        </div>
+    </div>
+</div>
+
+<!-- Mobile Sticky Footer -->
+<div class="mobile-sticky-bar">
+    <div class="sticky-content">
+        <div class="sticky-label">Total Driving</div>
+        <div class="sticky-value" id="stickyTotal">0h 0m</div>
+    </div>
+    <div class="status-badge ok" id="stickyStatus">LEGAL</div>
+</div>
+
+<script>
+    // Configuration Constants
+    const CONFIG = {
+        maxSpellMinutes: 5 * 60 + 30, // 5h 30m
+        maxTotalMinutes: 10 * 60,     // 10h
+        minBreakMinutes: 30,          // Minimum break length
+        minOvertimeGap: 30,           // Required gap before overtime
+        minRestMinutes: 9 * 60 + 30   // 9h 30m required rest
+    };
+
+    // DOM Elements
+    const form = document.getElementById('trackerForm');
+    const inputs = document.querySelectorAll('.calc-trigger');
+    const overtimeSection = document.getElementById('overtimeSection');
+    const toggleBtn = document.getElementById('toggleOvertimeBtn');
+    const dashboard = document.getElementById('dashboardContent');
+    
+    // Sticky Footer Elements
+    const stickyTotal = document.getElementById('stickyTotal');
+    const stickyStatus = document.getElementById('stickyStatus');
+
+    // State
+    let isOvertimeVisible = false;
+
+    // Event Listeners
+    inputs.forEach(input => {
+        input.addEventListener('input', calculate);
+    });
+
+    toggleBtn.addEventListener('click', () => {
+        isOvertimeVisible = !isOvertimeVisible;
+        overtimeSection.classList.toggle('hidden');
+        toggleBtn.textContent = isOvertimeVisible ? '- Remove Overtime' : '+ Add Overtime / 3rd Spell';
+        
+        if (!isOvertimeVisible) {
+            // Clear values when hiding
+            document.getElementById('overtimeStart').value = '';
+            document.getElementById('overtimeEnd').value = '';
+            document.getElementById('overtimeStand').value = '';
+        }
+        calculate();
+    });
+
+    // Helper: Convert "HH:MM" to minutes from midnight
+    function timeToMinutes(timeStr) {
+        if (!timeStr) return null;
+        const [h, m] = timeStr.split(':').map(Number);
+        return h * 60 + m;
+    }
+
+    // Helper: Calculate duration between two times, handling midnight crossing
+    function getDuration(startStr, endStr) {
+        const start = timeToMinutes(startStr);
+        const end = timeToMinutes(endStr);
+        
+        if (start === null || end === null) return 0;
+
+        let diff = end - start;
+        if (diff < 0) {
+            diff += 1440; // Add 24 hours (1440 mins)
+        }
+        return diff;
+    }
+
+    // Helper: Format minutes to "Xh Ym" (Duration)
+    function formatTime(totalMinutes) {
+        const h = Math.floor(totalMinutes / 60);
+        const m = totalMinutes % 60;
+        return `${h}h ${m}m`;
+    }
+
+    // Helper: Format minutes to "HH:MM" (Clock Time)
+    function formatClockTime(totalMinutes) {
+        // Handle wrapping over 24 hours
+        let mins = totalMinutes % 1440; // 1440 mins in a day
+        if (mins < 0) mins += 1440;
+        
+        const h = Math.floor(mins / 60);
+        const m = mins % 60;
+        
+        // Pad with leading zeros
+        const hStr = h.toString().padStart(2, '0');
+        const mStr = m.toString().padStart(2, '0');
+        
+        return `${hStr}:${mStr}`;
+    }
+
+    // Core Calculation Logic
+    function calculate() {
+        // 1. Get Values
+        const t1_start = document.getElementById('startTime').value;
+        const t1_end = document.getElementById('breakStart').value;
+        const t1_stand = parseInt(document.getElementById('standTime1').value) || 0;
+
+        const t2_start = document.getElementById('breakEnd').value;
+        const t2_end = document.getElementById('endTime').value;
+        const t2_stand = parseInt(document.getElementById('standTime2').value) || 0;
+
+        // 2. Calculate Spells
+        // Raw duration is time difference. Net driving is duration minus stand time.
+        const spell1_raw = getDuration(t1_start, t1_end);
+        const spell1_net = Math.max(0, spell1_raw - t1_stand);
+
+        // Break calculation (time between Spell 1 End and Spell 2 Start)
+        const break_duration = getDuration(t1_end, t2_start);
+
+        const spell2_raw = getDuration(t2_start, t2_end);
+        const spell2_net = Math.max(0, spell2_raw - t2_stand);
+
+        // Overtime Calculation
+        let ot_net = 0;
+        let ot_gap = 0;
+        let hasOvertime = false;
+        let finalEndTimeStr = t2_end; // Default to spell 2 end
+
+        if (isOvertimeVisible) {
+            const ot_start = document.getElementById('overtimeStart').value;
+            const ot_end = document.getElementById('overtimeEnd').value;
+            const ot_stand = parseInt(document.getElementById('overtimeStand').value) || 0;
+            
+            if (ot_start && ot_end) {
+                hasOvertime = true;
+                finalEndTimeStr = ot_end; // Update if overtime exists
+                const ot_raw = getDuration(ot_start, ot_end);
+                ot_net = Math.max(0, ot_raw - ot_stand);
+                ot_gap = getDuration(t2_end, ot_start);
             }
         }
 
-        function calculateDrivingTime() {
-            // Define constants first
-            const maxDrivingMinutes = 5 * 60 + 30; // 5 hours 30 minutes
-            const maxTotalDrivingMinutes = 10 * 60; // 10 hours
-            const requiredBreakTime = 40; // 40 minutes minimum break
-            const minOvertimeGap = 30;
+        // 3. Totals
+        const totalDriving = spell1_net + spell2_net + ot_net;
 
-            // Get all time inputs
-            const startTime = document.getElementById('startTime').value;
-            const breakStart = document.getElementById('breakStart').value;
-            const breakEnd = document.getElementById('breakEnd').value;
-            const endTime = document.getElementById('endTime').value;
-            const standTime1 = parseInt(document.getElementById('standTime1').value) || 0;
-            const standTime2 = parseInt(document.getElementById('standTime2').value) || 0;
+        // 4. Calculate Earliest Start Tomorrow
+        let nextStartStr = "--:--";
+        if (finalEndTimeStr) {
+            const finalEndMins = timeToMinutes(finalEndTimeStr);
+            // Add 9h 30m (570 mins)
+            const nextStartMins = finalEndMins + CONFIG.minRestMinutes;
+            nextStartStr = formatClockTime(nextStartMins);
+        }
 
-            // Get overtime inputs
-            const overtimeStart = document.getElementById('overtimeStart').value;
-            const overtimeEnd = document.getElementById('overtimeEnd').value;
-            const overtimeStand = parseInt(document.getElementById('overtimeStand').value) || 0;
-
-            // Convert times to minutes since midnight
-            const start = timeToMinutes(startTime);
-            const bStart = timeToMinutes(breakStart);
-            const bEnd = timeToMinutes(breakEnd);
-            const end = timeToMinutes(endTime);
-
-            // Adjust times that go past midnight
-            let adjustedBStart = bStart;
-            if (adjustedBStart < start) {
-                adjustedBStart += 24 * 60; // Add 24 hours in minutes
+        // 5. Generate UI Data
+        const results = [
+            {
+                label: 'First Spell',
+                value: spell1_net,
+                max: CONFIG.maxSpellMinutes,
+                isBreach: spell1_net > CONFIG.maxSpellMinutes,
+                msg: spell1_net > CONFIG.maxSpellMinutes ? 'Max 5h 30m exceeded' : 'Legal'
+            },
+            {
+                label: 'Break Duration',
+                value: break_duration,
+                max: CONFIG.minBreakMinutes, // This is a minimum, not a max
+                isBreach: break_duration < CONFIG.minBreakMinutes,
+                msg: break_duration < CONFIG.minBreakMinutes ? 'Break too short (<30m)' : 'Legal',
+                inverseProgress: true // For visual logic if needed
+            },
+            {
+                label: 'Second Spell',
+                value: spell2_net,
+                max: CONFIG.maxSpellMinutes,
+                isBreach: spell2_net > CONFIG.maxSpellMinutes,
+                msg: spell2_net > CONFIG.maxSpellMinutes ? 'Max 5h 30m exceeded' : 'Legal'
             }
+        ];
 
-            let adjustedBEnd = bEnd;
-            if (adjustedBEnd < start) {
-                adjustedBEnd += 24 * 60;
-            }
+        if (hasOvertime) {
+             results.push({
+                label: 'Overtime Gap',
+                value: ot_gap,
+                max: CONFIG.minOvertimeGap,
+                isBreach: ot_gap < CONFIG.minOvertimeGap,
+                msg: ot_gap < CONFIG.minOvertimeGap ? 'Gap too short (<30m)' : 'Legal',
+                isTime: false // It is time, but treated as a check
+            });
+            results.push({
+                label: 'Overtime Spell',
+                value: ot_net,
+                max: CONFIG.maxSpellMinutes,
+                isBreach: spell1_net > CONFIG.maxSpellMinutes, // Logic check: does overtime have a max individual spell? Assuming yes.
+                msg: 'Legal'
+            });
+        }
 
-            let adjustedEnd = end;
-            if (adjustedEnd < start) {
-                adjustedEnd += 24 * 60;
-            }
+        // Total
+        const isTotalBreach = totalDriving > CONFIG.maxTotalMinutes;
+        results.push({
+            label: 'Total Driving',
+            value: totalDriving,
+            max: CONFIG.maxTotalMinutes,
+            isBreach: isTotalBreach,
+            msg: isTotalBreach ? 'Daily limit (10h) exceeded' : 'Within Limits',
+            isTotal: true
+        });
 
-            // Calculate session totals using adjusted times
-            const firstSessionTotal = adjustedBStart - start;
-            const secondSessionTotal = adjustedEnd - adjustedBEnd;
+        // Earliest Start (Info Section)
+        results.push({
+            label: 'Earliest Start Tomorrow',
+            valStr: nextStartStr,
+            msg: 'Calculated using 9h 30m rest',
+            isInfo: true
+        });
+        
+        // 6. Check Global Legality for Sticky Footer
+        // A "Global Breach" is if ANY rule is broken, not just the total time
+        const globalBreach = results.some(r => r.isBreach);
+        updateStickyFooter(totalDriving, globalBreach);
+
+        renderDashboard(results);
+    }
+    
+    function updateStickyFooter(totalMinutes, isBreach) {
+        stickyTotal.textContent = formatTime(totalMinutes);
+        
+        // Update Sticky Status Badge
+        stickyStatus.className = 'status-badge ' + (isBreach ? 'breach' : 'ok');
+        stickyStatus.textContent = isBreach ? 'BREACH' : 'LEGAL';
+    }
+
+    function renderDashboard(data) {
+        dashboard.innerHTML = '';
+
+        data.forEach(item => {
+            let statusClass = item.isBreach ? 'danger' : 'success';
+            let badgeText = item.isBreach ? 'BREACH' : 'OK';
+            let badgeClass = item.isBreach ? 'breach' : 'ok';
             
-            // Handle overtime past midnight
-            let overtimeSessionTotal = 0;
-            if (overtimeStart && overtimeEnd) {
-                let oStart = timeToMinutes(overtimeStart);
-                let oEnd = timeToMinutes(overtimeEnd);
-                
-                if (oStart < start) {
-                    oStart += 24 * 60;
-                }
-                if (oEnd < start) {
-                    oEnd += 24 * 60;
-                }
-                
-                overtimeSessionTotal = oEnd - oStart;
+            // Override for Info items
+            if (item.isInfo) {
+                statusClass = 'info';
+                badgeText = 'INFO';
+                badgeClass = 'info';
             }
 
-            // Calculate actual driving times (with stand time deducted)
-            const firstSession = firstSessionTotal - standTime1;
-            const secondSession = secondSessionTotal - standTime2;
-            const overtimeSession = overtimeSessionTotal - overtimeStand;
-            const breakTime = adjustedBEnd - adjustedBStart;
+            // Calculate progress bar width
+            // If it's a "Minimum required" (like Break), logic is inverted visually or just calculated differently
+            let percentage = 0;
+            if (item.max > 0 && !item.isInfo) {
+                percentage = Math.min((item.value / item.max) * 100, 100);
+            }
+            
+            // Color of progress bar
+            let barColor = 'var(--success)';
+            if (item.isBreach) barColor = 'var(--danger)';
+            else if (percentage > 90 && !item.isTotal) barColor = 'var(--warning)';
 
-            // Calculate total driving time
-            let totalDrivingMinutes = firstSession + secondSession + (overtimeSession > 0 ? overtimeSession : 0);
+            // Determine what value to show (Calculated formatted string OR standard duration)
+            const displayValue = item.valStr ? item.valStr : formatTime(item.value);
 
-            // Check for breaches
-            const isFirstSpellBreach = firstSessionTotal > maxDrivingMinutes;
-            const isSecondSpellBreach = secondSessionTotal > maxDrivingMinutes;
-            const isBreakBreach = breakTime < requiredBreakTime;
-            const isOvertimeBreach = overtimeSessionTotal > maxDrivingMinutes;
-            const isOvertimeGapBreach = overtimeStart && overtimeEnd ? timeToMinutes(overtimeStart) < (adjustedEnd + minOvertimeGap) : false;
-            const isTotalTimeBreach = (firstSessionTotal + secondSessionTotal + overtimeSessionTotal) > maxTotalDrivingMinutes;
-
-            // Console logging for debugging
-            console.log('--- Driving Sessions Details ---');
-            console.log('First Session Total:', firstSessionTotal, 'minutes');
-            console.log('Second Session Total:', secondSessionTotal, 'minutes');
-            console.log('Overtime Session Total:', overtimeSessionTotal, 'minutes');
-            console.log('Max Allowed Minutes (5h30m):', maxDrivingMinutes);
-            console.log('Total Time:', firstSessionTotal + secondSessionTotal + overtimeSessionTotal, 'minutes');
-            console.log('Max Total Time (10h):', maxTotalDrivingMinutes);
-            console.log('------------------------');
-
-            // Convert total minutes to hours and minutes
-            const hours = Math.floor(totalDrivingMinutes / 60);
-            const minutes = totalDrivingMinutes % 60;
-
-            // Display result
-            document.getElementById('result').innerHTML = `
-                <h3>Driving Time Summary:</h3>
-                <p class="${isFirstSpellBreach ? 'warning' : 'ok'}">
-                    ${isFirstSpellBreach ? 'BREACH: ' : ''}First Session: ${minutesToTimeString(firstSession)}
-                </p>
-
-                <p class="${isSecondSpellBreach ? 'warning' : 'ok'}">
-                    ${isSecondSpellBreach ? 'BREACH: ' : ''}Second Session: ${minutesToTimeString(secondSession)}
-                </p>
-
-                <p class="${isBreakBreach ? 'warning' : 'ok'}">
-                    ${isBreakBreach ? 'BREACH: ' : ''}Break Time: ${breakTime} minutes
-                </p>
-
-                ${overtimeStart && overtimeEnd ? `
-                    <p class="${isOvertimeBreach || isOvertimeGapBreach ? 'warning' : 'ok'}">
-                        ${isOvertimeBreach ? 'BREACH: ' : ''}${isOvertimeGapBreach ? 'BREACH: Must start 30 minutes after second spell - ' : ''}Overtime Session: ${minutesToTimeString(overtimeSession)}
-                    </p>
-                ` : ''}
-
-                <p class="${isTotalTimeBreach ? 'warning' : 'ok'}">
-                    ${isTotalTimeBreach ? 'BREACH: ' : ''}Total Driving Time: ${hours} hours and ${minutes} minutes
-                </p>
+            const html = `
+                <div class="result-item ${statusClass}">
+                    <div class="result-header">
+                        <span class="result-label">${item.label}</span>
+                        <span class="status-badge ${badgeClass}">${badgeText}</span>
+                    </div>
+                    <div class="result-header">
+                        <span class="result-value">${displayValue}</span>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">${item.msg}</span>
+                    </div>
+                    ${item.max ? `
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: ${percentage}%; background-color: ${barColor}"></div>
+                    </div>` : ''}
+                </div>
             `;
-        }
+            dashboard.innerHTML += html;
+        });
+    }
 
-        function timeToMinutes(timeString) {
-            const [hours, minutes] = timeString.split(':').map(Number);
-            let totalMinutes = (hours * 60) + minutes;
-            
-            // If this is a later time being compared to an earlier time, assume it's the next day
-            return totalMinutes;
-        }
+    function resetForm() {
+        form.reset();
+        if(isOvertimeVisible) toggleBtn.click(); // Hide overtime if open
+        calculate(); // Recalculate to show zeros
+    }
 
-        function minutesToTimeString(minutes) {
-            const hours = Math.floor(minutes / 60);
-            const mins = minutes % 60;
-            return `${hours} hours and ${mins} minutes`;
-        }
-    </script>
+    // Initial run
+    calculate();
+
+</script>
 </body>
-</html> 
+</html>
