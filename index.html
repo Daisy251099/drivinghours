@@ -250,11 +250,11 @@
             <div class="input-grid">
                 <div class="form-group">
                     <label>Start Time (HH:MM)</label>
-                    <input type="text" inputmode="numeric" id="startTime" class="calc-trigger time-input" placeholder="06:00" value="06:00">
+                    <input type="text" id="startTime" class="calc-trigger time-input" placeholder="06:00" inputmode="decimal">
                 </div>
                 <div class="form-group">
                     <label>End Time (HH:MM)</label>
-                    <input type="text" inputmode="numeric" id="breakStart" class="calc-trigger time-input" placeholder="11:00" value="11:00">
+                    <input type="text" id="breakStart" class="calc-trigger time-input" placeholder="11:00" inputmode="decimal">
                 </div>
                 <div class="form-group full">
                     <label>Stand Time (min)</label>
@@ -266,11 +266,11 @@
             <div class="input-grid">
                 <div class="form-group">
                     <label>Start Time (HH:MM)</label>
-                    <input type="text" inputmode="numeric" id="breakEnd" class="calc-trigger time-input" placeholder="11:45" value="11:45">
+                    <input type="text" id="breakEnd" class="calc-trigger time-input" placeholder="11:45" inputmode="decimal">
                 </div>
                 <div class="form-group">
                     <label>End Time (HH:MM)</label>
-                    <input type="text" inputmode="numeric" id="endTime" class="calc-trigger time-input" placeholder="16:00" value="16:00">
+                    <input type="text" id="endTime" class="calc-trigger time-input" placeholder="16:00" inputmode="decimal">
                 </div>
                 <div class="form-group full">
                     <label>Stand Time (min)</label>
@@ -287,15 +287,15 @@
                 <div class="input-grid">
                     <div class="form-group">
                         <label>Start Time (HH:MM)</label>
-                        <input type="text" inputmode="numeric" id="overtimeStart" class="calc-trigger time-input" placeholder="16:30">
+                        <input type="text" id="overtimeStart" class="calc-trigger time-input" placeholder="16:30" inputmode="decimal">
                     </div>
                     <div class="form-group">
                         <label>End Time (HH:MM)</label>
-                        <input type="text" inputmode="numeric" id="overtimeEnd" class="calc-trigger time-input" placeholder="18:00">
+                        <input type="text" id="overtimeEnd" class="calc-trigger time-input" placeholder="18:00" inputmode="decimal">
                     </div>
                     <div class="form-group full">
                         <label>Stand Time (min)</label>
-                        <input type="number" inputmode="numeric" id="overtimeStand" class="calc-trigger" min="0">
+                        <input type="number" inputmode="numeric" id="overtimeStand" class="calc-trigger" min="0" placeholder="0">
                     </div>
                 </div>
             </div>
@@ -341,7 +341,6 @@
 
     let isOvertimeVisible = false;
 
-    // Helper to format text input to HH:MM automatically
     function formatTimeInput(e) {
         let value = e.target.value.replace(/[^0-9]/g, '');
         if (value.length > 4) value = value.slice(0, 4);
@@ -377,6 +376,506 @@
         const h = parseInt(parts[0]);
         const m = parseInt(parts[1]);
         if (isNaN(h) || isNaN(m)) return null;
+        if (h > 23 || m > 59) return null;
+        return h * 60 + m;
+    }
+
+    function getDuration(startStr, endStr) {
+        const start = timeToMinutes(startStr);
+        const end = timeToMinutes(endStr);
+        if (start === null || end === null) return 0;
+        let diff = end - start;
+        return diff < 0 ? diff + 1440 : diff;
+    }
+
+    function formatTime(totalMinutes) {
+        const h = Math.floor(totalMinutes / 60);
+        const m = totalMinutes % 60;
+        return `${h}h ${m}m`;
+    }
+
+    function formatClockTime(totalMinutes) {
+        let mins = totalMinutes % 1440;
+        if (mins < 0) mins += 1440;
+        const h = Math.floor(mins / 60);
+        const m = mins % 60;
+        return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+    }
+
+    function calculate() {
+        const t1_s = document.getElementById('startTime').value;
+        const t1_e = document.getElementById('breakStart').value;
+        const t1_st = parseInt(document.getElementById('standTime1').value) || 0;
+
+        const t2_s = document.getElementById('breakEnd').value;
+        const t2_e = document.getElementById('endTime').value;
+        const t2_st = parseInt(document.getElementById('standTime2').value) || 0;
+
+        const s1_raw = getDuration(t1_s, t1_e);
+        const s1_net = Math.max(0, s1_raw - t1_st);
+        const break_d = getDuration(t1_e, t2_s);
+        const s2_raw = getDuration(t2_s, t2_e);
+        const s2_net = Math.max(0, s2_raw - t2_st);
+
+        let ot_net = 0;
+        let ot_gap = 0;
+        let hasOt = false;
+        let finalEnd = t2_e;
+
+        if (isOvertimeVisible) {
+            const ot_s = document.getElementById('overtimeStart').value;
+            const ot_e = document.getElementById('overtimeEnd').value;
+            const ot_st = parseInt(document.getElementById('overtimeStand').value) || 0;
+            if (ot_s && ot_e) {
+                hasOt = true;
+                finalEnd = ot_e;
+                ot_net = Math.max(0, getDuration(ot_s, ot_e) - ot_st);
+                ot_gap = getDuration(t2_e, ot_s);
+            }
+        }
+
+        const totalDriving = s1_net + s2_net + ot_net;
+        const dutySpread = getDuration(t1_s, finalEnd);
+        
+        let nextStart = "--:--";
+        if (finalEnd && timeToMinutes(finalEnd) !== null) {
+            nextStart = formatClockTime(timeToMinutes(finalEnd) + CONFIG.minRestMinutes);
+        }
+
+        const results = [
+            { label: 'First Spell', val: s1_net, max: CONFIG.maxSpellMinutes, isBreach: s1_net > CONFIG.maxSpellMinutes, msg: 'Max 5h 30m' },
+            { label: 'Break (1 to 2)', val: break_d, min: CONFIG.minBreakMinutes, isBreach: break_d < CONFIG.minBreakMinutes, msg: 'Min 40m' },
+            { label: 'Second Spell', val: s2_net, max: CONFIG.maxSpellMinutes, isBreach: s2_net > CONFIG.maxSpellMinutes, msg: 'Max 5h 30m' }
+        ];
+
+        if (hasOt) {
+            results.push({ label: 'Gap to 3rd Spell', val: ot_gap, min: CONFIG.minOvertimeGap, isBreach: ot_gap < CONFIG.minOvertimeGap, msg: 'Min 30m' });
+            results.push({ label: '3rd Spell', val: ot_net, max: CONFIG.maxSpellMinutes, isBreach: ot_net > CONFIG.maxSpellMinutes, msg: 'Max 5h 30m' });
+        }
+
+        results.push({ label: 'Total Driving', val: totalDriving, max: CONFIG.maxTotalDriving, isBreach: totalDriving > CONFIG.maxTotalDriving, msg: 'Daily Limit 10h', isMain: true });
+        results.push({ label: 'Duty Spread', val: dutySpread, max: CONFIG.maxSpreadMinutes, isBreach: dutySpread > CONFIG.maxSpreadMinutes, msg: 'Max 14h Day', isMain: true });
+        results.push({ label: 'Earliest Start Tomorrow', valStr: nextStart, isInfo: true, msg: '9h 30m rest applied' });
+
+        renderDashboard(results);
+        updateSticky(totalDriving, dutySpread, results.some(r => r.isBreach));
+    }
+
+    function renderDashboard(data) {
+        dashboard.innerHTML = '';
+        data.forEach(item => {
+            const status = item.isBreach ? 'danger' : (item.isInfo ? 'info' : 'success');
+            const perc = item.max ? Math.min((item.val / item.max) * 100, 100) : 0;
+            const display = item.valStr || formatTime(item.val);
+            
+            dashboard.innerHTML += `
+                <div class="result-item ${status}">
+                    <div class="result-header">
+                        <span class="result-label">${item.label}</span>
+                        <span class="status-badge ${item.isBreach ? 'breach' : (item.isInfo ? 'info' : 'ok')}">${item.isBreach ? 'BREACH' : (item.isInfo ? 'INFO' : 'OK')}</span>
+                    </div>
+                    <div class="result-header">
+                        <span class="result-value">${display}</span>
+                        <span style="font-size: 0.75rem; font-weight: 500;">${item.msg}</span>
+                    </div>
+                    ${item.max ? `<div class="progress-container"><div class="progress-bar" style="width:${perc}%; background:${item.isBreach?'var(--danger)':(perc>85?'var(--warning)':'var(--success)')}"></div></div>` : ''}
+                </div>`;
+        });
+    }
+
+    function updateSticky(drv, dty, breach) {
+        stickyDriving.textContent = formatTime(drv);
+        stickyDuty.textContent = formatTime(dty);
+        stickyStatus.className = 'status-badge ' + (breach ? 'breach' : 'ok');
+        stickyStatus.textContent = breach ? 'BREACH' : 'LEGAL';
+    }
+
+    function resetForm() {
+        document.getElementById('trackerForm').reset();
+        if(isOvertimeVisible) toggleBtn.click();
+        calculate();
+    }
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Professional Driving Hours Tracker</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --bg-body: #f3f4f6;
+            --bg-card: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --mobile-bar-height: 75px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-body: #111827;
+                --bg-card: #1f2937;
+                --text-main: #f9fafb;
+                --text-muted: #9ca3af;
+                --border: #374151;
+            }
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            padding: 20px;
+            padding-bottom: calc(40px + var(--mobile-bar-height));
+            line-height: 1.5;
+            transition: background-color 0.3s;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        @media(min-width: 768px) {
+            .container {
+                grid-template-columns: 1.1fr 0.9fr;
+                align-items: start;
+            }
+            body { padding-bottom: 40px; }
+        }
+
+        @media(max-width: 767px) {
+            body { padding: 12px; padding-bottom: calc(30px + var(--mobile-bar-height)); }
+            .container { gap: 16px; }
+            .card { padding: 16px; }
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        h1, h2 { margin-bottom: 20px; font-weight: 700; letter-spacing: -0.025em; }
+        h1 { font-size: 1.5rem; color: var(--primary); display: flex; align-items: center; justify-content: space-between; }
+        h2 { font-size: 1.25rem; display: flex; align-items: center; gap: 8px; }
+
+        .section-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            font-weight: 700;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .form-group { margin-bottom: 12px; }
+        .form-group.full { grid-column: 1 / -1; }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        input {
+            width: 100%;
+            height: 48px;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg-body);
+            color: var(--text-main);
+            font-size: 16px;
+            transition: all 0.2s;
+            -webkit-appearance: none;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 20px;
+            height: 48px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            width: 100%;
+            font-size: 1rem;
+            gap: 8px;
+        }
+
+        .btn-secondary {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:active { background-color: var(--border); }
+
+        .btn-reset {
+            margin-top: 10px;
+            background: transparent;
+            color: var(--danger);
+            font-size: 0.85rem;
+            height: auto;
+            opacity: 0.8;
+            cursor: pointer;
+        }
+
+        .result-item {
+            padding: 16px;
+            border-radius: 12px;
+            background: var(--bg-body);
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+            position: relative;
+        }
+
+        .result-item.success { border-left: 5px solid var(--success); }
+        .result-item.danger { border-left: 5px solid var(--danger); background: rgba(239, 68, 68, 0.05); }
+        .result-item.warning { border-left: 5px solid var(--warning); background: rgba(245, 158, 11, 0.05); }
+        .result-item.info { border-left: 5px solid var(--info); background: rgba(59, 130, 246, 0.05); }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .result-label { font-weight: 600; font-size: 0.85rem; color: var(--text-muted); }
+        .result-value { font-family: 'JetBrains Mono', monospace; font-size: 1.2rem; font-weight: 800; }
+        
+        .status-badge {
+            font-size: 0.7rem;
+            padding: 2px 10px;
+            border-radius: 99px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .status-badge.ok { background-color: var(--success); color: white; }
+        .status-badge.breach { background-color: var(--danger); color: white; }
+        .status-badge.info { background-color: var(--info); color: white; }
+
+        .progress-container {
+            height: 6px;
+            background-color: var(--border);
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: var(--success);
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        #overtimeSection { transition: all 0.3s ease; }
+        .hidden { display: none; }
+
+        .mobile-sticky-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--mobile-bar-height);
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            box-shadow: 0 -8px 20px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+        
+        @media(min-width: 768px) {
+            .mobile-sticky-bar { display: none; }
+        }
+
+        .sticky-content { display: flex; flex-direction: column; }
+        .sticky-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
+        .sticky-value { font-size: 1.25rem; font-weight: 900; color: var(--text-main); font-family: monospace; }
+
+        .time-hint { font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; display: block; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <h1>Shift Inputs</h1>
+        
+        <form id="trackerForm">
+            <div class="section-title">First Spell</div>
+            <div class="input-grid">
+                <div class="form-group">
+                    <label>Start Time (HH:MM)</label>
+                    <input type="text" id="startTime" class="calc-trigger time-input" placeholder="06:00" inputmode="decimal">
+                </div>
+                <div class="form-group">
+                    <label>End Time (HH:MM)</label>
+                    <input type="text" id="breakStart" class="calc-trigger time-input" placeholder="11:00" inputmode="decimal">
+                </div>
+                <div class="form-group full">
+                    <label>Stand Time (min)</label>
+                    <input type="number" inputmode="numeric" id="standTime1" class="calc-trigger" min="0" placeholder="0">
+                </div>
+            </div>
+
+            <div class="section-title">Second Spell</div>
+            <div class="input-grid">
+                <div class="form-group">
+                    <label>Start Time (HH:MM)</label>
+                    <input type="text" id="breakEnd" class="calc-trigger time-input" placeholder="11:45" inputmode="decimal">
+                </div>
+                <div class="form-group">
+                    <label>End Time (HH:MM)</label>
+                    <input type="text" id="endTime" class="calc-trigger time-input" placeholder="16:00" inputmode="decimal">
+                </div>
+                <div class="form-group full">
+                    <label>Stand Time (min)</label>
+                    <input type="number" inputmode="numeric" id="standTime2" class="calc-trigger" min="0" placeholder="0">
+                </div>
+            </div>
+
+            <button type="button" id="toggleOvertimeBtn" class="btn btn-secondary">
+                + Add 3rd Spell / Overtime
+            </button>
+
+            <div id="overtimeSection" class="hidden" style="margin-top: 20px;">
+                <div class="section-title">Overtime Spell</div>
+                <div class="input-grid">
+                    <div class="form-group">
+                        <label>Start Time (HH:MM)</label>
+                        <input type="text" id="overtimeStart" class="calc-trigger time-input" placeholder="16:30" inputmode="decimal">
+                    </div>
+                    <div class="form-group">
+                        <label>End Time (HH:MM)</label>
+                        <input type="text" id="overtimeEnd" class="calc-trigger time-input" placeholder="18:00" inputmode="decimal">
+                    </div>
+                    <div class="form-group full">
+                        <label>Stand Time (min)</label>
+                        <input type="number" inputmode="numeric" id="overtimeStand" class="calc-trigger" min="0" placeholder="0">
+                    </div>
+                </div>
+            </div>
+            
+            <button type="button" onclick="resetForm()" class="btn btn-reset">Clear All Data</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>Dashboard Summary</h2>
+        <div id="dashboardContent"></div>
+    </div>
+</div>
+
+<div class="mobile-sticky-bar">
+    <div class="sticky-content">
+        <div class="sticky-label">Driving</div>
+        <div class="sticky-value" id="stickyDriving">0h 0m</div>
+    </div>
+    <div class="sticky-content">
+        <div class="sticky-label">Duty / Spread</div>
+        <div class="sticky-value" id="stickyDuty">0h 0m</div>
+    </div>
+    <div class="status-badge ok" id="stickyStatus" style="height: 30px; display: flex; align-items: center; padding: 0 15px;">LEGAL</div>
+</div>
+
+<script>
+    const CONFIG = {
+        maxSpellMinutes: 5 * 60 + 30, 
+        maxTotalDriving: 10 * 60,     
+        maxSpreadMinutes: 14 * 60,
+        minBreakMinutes: 40,
+        minOvertimeGap: 30,           
+        minRestMinutes: 9 * 60 + 30   
+    };
+
+    const dashboard = document.getElementById('dashboardContent');
+    const stickyDriving = document.getElementById('stickyDriving');
+    const stickyDuty = document.getElementById('stickyDuty');
+    const stickyStatus = document.getElementById('stickyStatus');
+    const overtimeSection = document.getElementById('overtimeSection');
+    const toggleBtn = document.getElementById('toggleOvertimeBtn');
+
+    let isOvertimeVisible = false;
+
+    function formatTimeInput(e) {
+        let value = e.target.value.replace(/[^0-9]/g, '');
+        if (value.length > 4) value = value.slice(0, 4);
+        
+        if (value.length >= 3) {
+            value = value.slice(0, 2) + ':' + value.slice(2);
+        }
+        e.target.value = value;
+    }
+
+    window.onload = () => {
+        calculate();
+    };
+
+    document.querySelectorAll('.calc-trigger').forEach(input => {
+        input.addEventListener('input', calculate);
+        if (input.classList.contains('time-input')) {
+            input.addEventListener('input', formatTimeInput);
+        }
+    });
+
+    toggleBtn.addEventListener('click', () => {
+        isOvertimeVisible = !isOvertimeVisible;
+        overtimeSection.classList.toggle('hidden');
+        toggleBtn.textContent = isOvertimeVisible ? '- Remove 3rd Spell' : '+ Add 3rd Spell / Overtime';
+        calculate();
+    });
+
+    function timeToMinutes(timeStr) {
+        if (!timeStr || !timeStr.includes(':')) return null;
+        const parts = timeStr.split(':');
+        if (parts.length !== 2) return null;
+        const h = parseInt(parts[0]);
+        const m = parseInt(parts[1]);
+        if (isNaN(h) || isNaN(m)) return null;
+        if (h > 23 || m > 59) return null;
         return h * 60 + m;
     }
 
