@@ -18,7 +18,7 @@
             --text-muted: #6b7280;
             --border: #e5e7eb;
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --mobile-bar-height: 70px;
+            --mobile-bar-height: 75px;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -31,14 +31,14 @@
             }
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body {
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
             background-color: var(--bg-body);
             color: var(--text-main);
             padding: 20px;
-            padding-bottom: calc(20px + var(--mobile-bar-height)); /* Space for sticky footer */
+            padding-bottom: calc(40px + var(--mobile-bar-height));
             line-height: 1.5;
             transition: background-color 0.3s;
         }
@@ -53,20 +53,18 @@
 
         @media(min-width: 768px) {
             .container {
-                grid-template-columns: 1.2fr 0.8fr; /* Inputs wider than results */
+                grid-template-columns: 1.1fr 0.9fr;
                 align-items: start;
             }
-            body { padding-bottom: 20px; } /* Reset padding on desktop */
+            body { padding-bottom: 40px; }
         }
 
         @media(max-width: 767px) {
-            body { padding: 12px; padding-bottom: calc(12px + var(--mobile-bar-height)); }
+            body { padding: 12px; padding-bottom: calc(30px + var(--mobile-bar-height)); }
             .container { gap: 16px; }
             .card { padding: 16px; }
-            h1 { font-size: 1.25rem; margin-bottom: 16px; }
         }
 
-        /* Card Styling */
         .card {
             background: var(--bg-card);
             border-radius: 12px;
@@ -76,19 +74,20 @@
         }
 
         h1, h2 { margin-bottom: 20px; font-weight: 700; letter-spacing: -0.025em; }
-        h1 { font-size: 1.5rem; color: var(--primary); }
-        h2 { font-size: 1.25rem; }
+        h1 { font-size: 1.5rem; color: var(--primary); display: flex; align-items: center; justify-content: space-between; }
+        h2 { font-size: 1.25rem; display: flex; align-items: center; gap: 8px; }
 
-        /* Form Elements */
         .section-title {
-            font-size: 0.875rem;
+            font-size: 0.8rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: var(--text-muted);
             margin-bottom: 12px;
-            font-weight: 600;
+            font-weight: 700;
             border-bottom: 1px solid var(--border);
             padding-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
         }
 
         .input-grid {
@@ -111,37 +110,37 @@
 
         input {
             width: 100%;
-            height: 44px; /* Larger touch target */
+            height: 48px;
             padding: 8px 12px;
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: 10px;
             background: var(--bg-body);
             color: var(--text-main);
-            font-size: 16px; /* Prevents iOS zoom */
-            transition: border-color 0.2s, box-shadow 0.2s;
+            font-size: 16px;
+            transition: all 0.2s;
             -webkit-appearance: none;
         }
 
         input:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
         }
 
-        /* Buttons */
         .btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
             padding: 12px 20px;
-            height: 44px;
-            border-radius: 8px;
-            font-weight: 500;
+            height: 48px;
+            border-radius: 10px;
+            font-weight: 600;
             cursor: pointer;
             border: none;
             transition: all 0.2s;
             width: 100%;
             font-size: 1rem;
+            gap: 8px;
         }
 
         .btn-secondary {
@@ -149,30 +148,31 @@
             color: var(--text-main);
             border: 1px solid var(--border);
         }
-        .btn-secondary:active, .btn-secondary:hover { background-color: var(--border); }
+        .btn-secondary:active { background-color: var(--border); }
 
         .btn-reset {
             margin-top: 10px;
-            background-color: transparent;
-            color: var(--text-muted);
+            background: transparent;
+            color: var(--danger);
             font-size: 0.85rem;
             height: auto;
+            opacity: 0.8;
+            cursor: pointer;
         }
-        .btn-reset:hover { text-decoration: underline; color: var(--danger); }
 
-        /* Results & Status Badges */
         .result-item {
-            padding: 14px;
-            border-radius: 8px;
+            padding: 16px;
+            border-radius: 12px;
             background: var(--bg-body);
             margin-bottom: 12px;
-            border-left: 4px solid var(--border);
+            border: 1px solid var(--border);
+            position: relative;
         }
 
-        .result-item.success { border-left-color: var(--success); background: rgba(16, 185, 129, 0.1); }
-        .result-item.danger { border-left-color: var(--danger); background: rgba(239, 68, 68, 0.1); }
-        .result-item.warning { border-left-color: var(--warning); background: rgba(245, 158, 11, 0.1); }
-        .result-item.info { border-left-color: var(--info); background: rgba(59, 130, 246, 0.1); }
+        .result-item.success { border-left: 5px solid var(--success); }
+        .result-item.danger { border-left: 5px solid var(--danger); background: rgba(239, 68, 68, 0.05); }
+        .result-item.warning { border-left: 5px solid var(--warning); background: rgba(245, 158, 11, 0.05); }
+        .result-item.info { border-left: 5px solid var(--info); background: rgba(59, 130, 246, 0.05); }
 
         .result-header {
             display: flex;
@@ -181,14 +181,14 @@
             margin-bottom: 4px;
         }
 
-        .result-label { font-weight: 600; font-size: 0.9rem; }
-        .result-value { font-family: monospace; font-size: 1.1rem; font-weight: 700; }
+        .result-label { font-weight: 600; font-size: 0.85rem; color: var(--text-muted); }
+        .result-value { font-family: 'JetBrains Mono', monospace; font-size: 1.2rem; font-weight: 800; }
         
         .status-badge {
-            font-size: 0.75rem;
-            padding: 2px 8px;
+            font-size: 0.7rem;
+            padding: 2px 10px;
             border-radius: 99px;
-            font-weight: 600;
+            font-weight: 700;
             text-transform: uppercase;
         }
         .status-badge.ok { background-color: var(--success); color: white; }
@@ -199,22 +199,18 @@
             height: 6px;
             background-color: var(--border);
             border-radius: 3px;
-            margin-top: 8px;
+            margin-top: 10px;
             overflow: hidden;
         }
         .progress-bar {
             height: 100%;
             background-color: var(--success);
-            transition: width 0.3s ease, background-color 0.3s ease;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
-        #overtimeSection {
-            transition: all 0.3s ease-in-out;
-            overflow: hidden;
-        }
+        #overtimeSection { transition: all 0.3s ease; }
         .hidden { display: none; }
 
-        /* Mobile Sticky Footer */
         .mobile-sticky-bar {
             position: fixed;
             bottom: 0;
@@ -226,8 +222,8 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 20px;
-            box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+            padding: 0 16px;
+            box-shadow: 0 -8px 20px rgba(0,0,0,0.1);
             z-index: 100;
         }
         
@@ -235,383 +231,270 @@
             .mobile-sticky-bar { display: none; }
         }
 
-        .sticky-content {
-            display: flex;
-            flex-direction: column;
-        }
-        .sticky-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
-        .sticky-value { font-size: 1.25rem; font-weight: 800; color: var(--text-main); font-family: monospace; }
-        .sticky-status { padding: 6px 12px; font-size: 0.9rem; }
+        .sticky-content { display: flex; flex-direction: column; }
+        .sticky-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
+        .sticky-value { font-size: 1.25rem; font-weight: 900; color: var(--text-main); font-family: monospace; }
+
+        .time-hint { font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; display: block; }
 
     </style>
 </head>
 <body>
 
 <div class="container">
-    <!-- INPUT SECTION -->
     <div class="card">
-        <h1>Driving Tracker</h1>
+        <h1>Shift Inputs</h1>
         
         <form id="trackerForm">
-            <!-- Spell 1 -->
             <div class="section-title">First Spell</div>
             <div class="input-grid">
                 <div class="form-group">
-                    <label for="startTime">Start Time</label>
-                    <input type="time" id="startTime" class="calc-trigger" value="06:00">
+                    <label>Start Time (HH:MM)</label>
+                    <input type="text" inputmode="numeric" id="startTime" class="calc-trigger time-input" placeholder="06:00" value="06:00">
                 </div>
                 <div class="form-group">
-                    <label for="breakStart">End Time</label>
-                    <input type="time" id="breakStart" class="calc-trigger" value="11:00">
+                    <label>End Time (HH:MM)</label>
+                    <input type="text" inputmode="numeric" id="breakStart" class="calc-trigger time-input" placeholder="11:00" value="11:00">
                 </div>
                 <div class="form-group full">
-                    <label for="standTime1">Stand Time (minutes)</label>
-                    <input type="number" inputmode="numeric" id="standTime1" class="calc-trigger" min="0" placeholder="e.g. 15">
+                    <label>Stand Time (min)</label>
+                    <input type="number" inputmode="numeric" id="standTime1" class="calc-trigger" min="0" placeholder="0">
                 </div>
             </div>
 
-            <!-- Spell 2 -->
             <div class="section-title">Second Spell</div>
             <div class="input-grid">
                 <div class="form-group">
-                    <label for="breakEnd">Start Time</label>
-                    <input type="time" id="breakEnd" class="calc-trigger" value="11:45">
+                    <label>Start Time (HH:MM)</label>
+                    <input type="text" inputmode="numeric" id="breakEnd" class="calc-trigger time-input" placeholder="11:45" value="11:45">
                 </div>
                 <div class="form-group">
-                    <label for="endTime">End Time</label>
-                    <input type="time" id="endTime" class="calc-trigger" value="16:00">
+                    <label>End Time (HH:MM)</label>
+                    <input type="text" inputmode="numeric" id="endTime" class="calc-trigger time-input" placeholder="16:00" value="16:00">
                 </div>
                 <div class="form-group full">
-                    <label for="standTime2">Stand Time (minutes)</label>
-                    <input type="number" inputmode="numeric" id="standTime2" class="calc-trigger" min="0" placeholder="e.g. 15">
+                    <label>Stand Time (min)</label>
+                    <input type="number" inputmode="numeric" id="standTime2" class="calc-trigger" min="0" placeholder="0">
                 </div>
             </div>
 
-            <!-- Overtime Toggle -->
             <button type="button" id="toggleOvertimeBtn" class="btn btn-secondary">
-                + Add Overtime / 3rd Spell
+                + Add 3rd Spell / Overtime
             </button>
 
-            <!-- Overtime Section -->
             <div id="overtimeSection" class="hidden" style="margin-top: 20px;">
                 <div class="section-title">Overtime Spell</div>
                 <div class="input-grid">
                     <div class="form-group">
-                        <label for="overtimeStart">Start Time</label>
-                        <input type="time" id="overtimeStart" class="calc-trigger">
+                        <label>Start Time (HH:MM)</label>
+                        <input type="text" inputmode="numeric" id="overtimeStart" class="calc-trigger time-input" placeholder="16:30">
                     </div>
                     <div class="form-group">
-                        <label for="overtimeEnd">End Time</label>
-                        <input type="time" id="overtimeEnd" class="calc-trigger">
+                        <label>End Time (HH:MM)</label>
+                        <input type="text" inputmode="numeric" id="overtimeEnd" class="calc-trigger time-input" placeholder="18:00">
                     </div>
                     <div class="form-group full">
-                        <label for="overtimeStand">Stand Time (minutes)</label>
+                        <label>Stand Time (min)</label>
                         <input type="number" inputmode="numeric" id="overtimeStand" class="calc-trigger" min="0">
                     </div>
                 </div>
             </div>
             
-            <button type="button" onclick="resetForm()" class="btn btn-reset">Reset All Fields</button>
+            <button type="button" onclick="resetForm()" class="btn btn-reset">Clear All Data</button>
         </form>
     </div>
 
-    <!-- RESULTS SECTION -->
     <div class="card">
-        <h2>Dashboard</h2>
-        <div id="dashboardContent">
-            <!-- Results injected via JS -->
-        </div>
+        <h2>Dashboard Summary</h2>
+        <div id="dashboardContent"></div>
     </div>
 </div>
 
-<!-- Mobile Sticky Footer -->
 <div class="mobile-sticky-bar">
     <div class="sticky-content">
-        <div class="sticky-label">Total Driving</div>
-        <div class="sticky-value" id="stickyTotal">0h 0m</div>
+        <div class="sticky-label">Driving</div>
+        <div class="sticky-value" id="stickyDriving">0h 0m</div>
     </div>
-    <div class="status-badge ok" id="stickyStatus">LEGAL</div>
+    <div class="sticky-content">
+        <div class="sticky-label">Duty / Spread</div>
+        <div class="sticky-value" id="stickyDuty">0h 0m</div>
+    </div>
+    <div class="status-badge ok" id="stickyStatus" style="height: 30px; display: flex; align-items: center; padding: 0 15px;">LEGAL</div>
 </div>
 
 <script>
-    // Configuration Constants
     const CONFIG = {
-        maxSpellMinutes: 5 * 60 + 30, // 5h 30m
-        maxTotalMinutes: 10 * 60,     // 10h
-        minBreakMinutes: 30,          // Minimum break length
-        minOvertimeGap: 30,           // Required gap before overtime
-        minRestMinutes: 9 * 60 + 30   // 9h 30m required rest
+        maxSpellMinutes: 5 * 60 + 30, 
+        maxTotalDriving: 10 * 60,     
+        maxSpreadMinutes: 14 * 60,
+        minBreakMinutes: 40,
+        minOvertimeGap: 30,           
+        minRestMinutes: 9 * 60 + 30   
     };
 
-    // DOM Elements
-    const form = document.getElementById('trackerForm');
-    const inputs = document.querySelectorAll('.calc-trigger');
+    const dashboard = document.getElementById('dashboardContent');
+    const stickyDriving = document.getElementById('stickyDriving');
+    const stickyDuty = document.getElementById('stickyDuty');
+    const stickyStatus = document.getElementById('stickyStatus');
     const overtimeSection = document.getElementById('overtimeSection');
     const toggleBtn = document.getElementById('toggleOvertimeBtn');
-    const dashboard = document.getElementById('dashboardContent');
-    
-    // Sticky Footer Elements
-    const stickyTotal = document.getElementById('stickyTotal');
-    const stickyStatus = document.getElementById('stickyStatus');
 
-    // State
     let isOvertimeVisible = false;
 
-    // Event Listeners
-    inputs.forEach(input => {
+    // Helper to format text input to HH:MM automatically
+    function formatTimeInput(e) {
+        let value = e.target.value.replace(/[^0-9]/g, '');
+        if (value.length > 4) value = value.slice(0, 4);
+        
+        if (value.length >= 3) {
+            value = value.slice(0, 2) + ':' + value.slice(2);
+        }
+        e.target.value = value;
+    }
+
+    window.onload = () => {
+        calculate();
+    };
+
+    document.querySelectorAll('.calc-trigger').forEach(input => {
         input.addEventListener('input', calculate);
+        if (input.classList.contains('time-input')) {
+            input.addEventListener('input', formatTimeInput);
+        }
     });
 
     toggleBtn.addEventListener('click', () => {
         isOvertimeVisible = !isOvertimeVisible;
         overtimeSection.classList.toggle('hidden');
-        toggleBtn.textContent = isOvertimeVisible ? '- Remove Overtime' : '+ Add Overtime / 3rd Spell';
-        
-        if (!isOvertimeVisible) {
-            // Clear values when hiding
-            document.getElementById('overtimeStart').value = '';
-            document.getElementById('overtimeEnd').value = '';
-            document.getElementById('overtimeStand').value = '';
-        }
+        toggleBtn.textContent = isOvertimeVisible ? '- Remove 3rd Spell' : '+ Add 3rd Spell / Overtime';
         calculate();
     });
 
-    // Helper: Convert "HH:MM" to minutes from midnight
     function timeToMinutes(timeStr) {
-        if (!timeStr) return null;
-        const [h, m] = timeStr.split(':').map(Number);
+        if (!timeStr || !timeStr.includes(':')) return null;
+        const parts = timeStr.split(':');
+        if (parts.length !== 2) return null;
+        const h = parseInt(parts[0]);
+        const m = parseInt(parts[1]);
+        if (isNaN(h) || isNaN(m)) return null;
         return h * 60 + m;
     }
 
-    // Helper: Calculate duration between two times, handling midnight crossing
     function getDuration(startStr, endStr) {
         const start = timeToMinutes(startStr);
         const end = timeToMinutes(endStr);
-        
         if (start === null || end === null) return 0;
-
         let diff = end - start;
-        if (diff < 0) {
-            diff += 1440; // Add 24 hours (1440 mins)
-        }
-        return diff;
+        return diff < 0 ? diff + 1440 : diff;
     }
 
-    // Helper: Format minutes to "Xh Ym" (Duration)
     function formatTime(totalMinutes) {
         const h = Math.floor(totalMinutes / 60);
         const m = totalMinutes % 60;
         return `${h}h ${m}m`;
     }
 
-    // Helper: Format minutes to "HH:MM" (Clock Time)
     function formatClockTime(totalMinutes) {
-        // Handle wrapping over 24 hours
-        let mins = totalMinutes % 1440; // 1440 mins in a day
+        let mins = totalMinutes % 1440;
         if (mins < 0) mins += 1440;
-        
         const h = Math.floor(mins / 60);
         const m = mins % 60;
-        
-        // Pad with leading zeros
-        const hStr = h.toString().padStart(2, '0');
-        const mStr = m.toString().padStart(2, '0');
-        
-        return `${hStr}:${mStr}`;
+        return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
     }
 
-    // Core Calculation Logic
     function calculate() {
-        // 1. Get Values
-        const t1_start = document.getElementById('startTime').value;
-        const t1_end = document.getElementById('breakStart').value;
-        const t1_stand = parseInt(document.getElementById('standTime1').value) || 0;
+        const t1_s = document.getElementById('startTime').value;
+        const t1_e = document.getElementById('breakStart').value;
+        const t1_st = parseInt(document.getElementById('standTime1').value) || 0;
 
-        const t2_start = document.getElementById('breakEnd').value;
-        const t2_end = document.getElementById('endTime').value;
-        const t2_stand = parseInt(document.getElementById('standTime2').value) || 0;
+        const t2_s = document.getElementById('breakEnd').value;
+        const t2_e = document.getElementById('endTime').value;
+        const t2_st = parseInt(document.getElementById('standTime2').value) || 0;
 
-        // 2. Calculate Spells
-        // Raw duration is time difference. Net driving is duration minus stand time.
-        const spell1_raw = getDuration(t1_start, t1_end);
-        const spell1_net = Math.max(0, spell1_raw - t1_stand);
+        const s1_raw = getDuration(t1_s, t1_e);
+        const s1_net = Math.max(0, s1_raw - t1_st);
+        const break_d = getDuration(t1_e, t2_s);
+        const s2_raw = getDuration(t2_s, t2_e);
+        const s2_net = Math.max(0, s2_raw - t2_st);
 
-        // Break calculation (time between Spell 1 End and Spell 2 Start)
-        const break_duration = getDuration(t1_end, t2_start);
-
-        const spell2_raw = getDuration(t2_start, t2_end);
-        const spell2_net = Math.max(0, spell2_raw - t2_stand);
-
-        // Overtime Calculation
         let ot_net = 0;
         let ot_gap = 0;
-        let hasOvertime = false;
-        let finalEndTimeStr = t2_end; // Default to spell 2 end
+        let hasOt = false;
+        let finalEnd = t2_e;
 
         if (isOvertimeVisible) {
-            const ot_start = document.getElementById('overtimeStart').value;
-            const ot_end = document.getElementById('overtimeEnd').value;
-            const ot_stand = parseInt(document.getElementById('overtimeStand').value) || 0;
-            
-            if (ot_start && ot_end) {
-                hasOvertime = true;
-                finalEndTimeStr = ot_end; // Update if overtime exists
-                const ot_raw = getDuration(ot_start, ot_end);
-                ot_net = Math.max(0, ot_raw - ot_stand);
-                ot_gap = getDuration(t2_end, ot_start);
+            const ot_s = document.getElementById('overtimeStart').value;
+            const ot_e = document.getElementById('overtimeEnd').value;
+            const ot_st = parseInt(document.getElementById('overtimeStand').value) || 0;
+            if (ot_s && ot_e) {
+                hasOt = true;
+                finalEnd = ot_e;
+                ot_net = Math.max(0, getDuration(ot_s, ot_e) - ot_st);
+                ot_gap = getDuration(t2_e, ot_s);
             }
         }
 
-        // 3. Totals
-        const totalDriving = spell1_net + spell2_net + ot_net;
-
-        // 4. Calculate Earliest Start Tomorrow
-        let nextStartStr = "--:--";
-        if (finalEndTimeStr) {
-            const finalEndMins = timeToMinutes(finalEndTimeStr);
-            // Add 9h 30m (570 mins)
-            const nextStartMins = finalEndMins + CONFIG.minRestMinutes;
-            nextStartStr = formatClockTime(nextStartMins);
+        const totalDriving = s1_net + s2_net + ot_net;
+        const dutySpread = getDuration(t1_s, finalEnd);
+        
+        let nextStart = "--:--";
+        if (finalEnd && timeToMinutes(finalEnd) !== null) {
+            nextStart = formatClockTime(timeToMinutes(finalEnd) + CONFIG.minRestMinutes);
         }
 
-        // 5. Generate UI Data
         const results = [
-            {
-                label: 'First Spell',
-                value: spell1_net,
-                max: CONFIG.maxSpellMinutes,
-                isBreach: spell1_net > CONFIG.maxSpellMinutes,
-                msg: spell1_net > CONFIG.maxSpellMinutes ? 'Max 5h 30m exceeded' : 'Legal'
-            },
-            {
-                label: 'Break Duration',
-                value: break_duration,
-                max: CONFIG.minBreakMinutes, // This is a minimum, not a max
-                isBreach: break_duration < CONFIG.minBreakMinutes,
-                msg: break_duration < CONFIG.minBreakMinutes ? 'Break too short (<30m)' : 'Legal',
-                inverseProgress: true // For visual logic if needed
-            },
-            {
-                label: 'Second Spell',
-                value: spell2_net,
-                max: CONFIG.maxSpellMinutes,
-                isBreach: spell2_net > CONFIG.maxSpellMinutes,
-                msg: spell2_net > CONFIG.maxSpellMinutes ? 'Max 5h 30m exceeded' : 'Legal'
-            }
+            { label: 'First Spell', val: s1_net, max: CONFIG.maxSpellMinutes, isBreach: s1_net > CONFIG.maxSpellMinutes, msg: 'Max 5h 30m' },
+            { label: 'Break (1 to 2)', val: break_d, min: CONFIG.minBreakMinutes, isBreach: break_d < CONFIG.minBreakMinutes, msg: 'Min 40m' },
+            { label: 'Second Spell', val: s2_net, max: CONFIG.maxSpellMinutes, isBreach: s2_net > CONFIG.maxSpellMinutes, msg: 'Max 5h 30m' }
         ];
 
-        if (hasOvertime) {
-             results.push({
-                label: 'Overtime Gap',
-                value: ot_gap,
-                max: CONFIG.minOvertimeGap,
-                isBreach: ot_gap < CONFIG.minOvertimeGap,
-                msg: ot_gap < CONFIG.minOvertimeGap ? 'Gap too short (<30m)' : 'Legal',
-                isTime: false // It is time, but treated as a check
-            });
-            results.push({
-                label: 'Overtime Spell',
-                value: ot_net,
-                max: CONFIG.maxSpellMinutes,
-                isBreach: spell1_net > CONFIG.maxSpellMinutes, // Logic check: does overtime have a max individual spell? Assuming yes.
-                msg: 'Legal'
-            });
+        if (hasOt) {
+            results.push({ label: 'Gap to 3rd Spell', val: ot_gap, min: CONFIG.minOvertimeGap, isBreach: ot_gap < CONFIG.minOvertimeGap, msg: 'Min 30m' });
+            results.push({ label: '3rd Spell', val: ot_net, max: CONFIG.maxSpellMinutes, isBreach: ot_net > CONFIG.maxSpellMinutes, msg: 'Max 5h 30m' });
         }
 
-        // Total
-        const isTotalBreach = totalDriving > CONFIG.maxTotalMinutes;
-        results.push({
-            label: 'Total Driving',
-            value: totalDriving,
-            max: CONFIG.maxTotalMinutes,
-            isBreach: isTotalBreach,
-            msg: isTotalBreach ? 'Daily limit (10h) exceeded' : 'Within Limits',
-            isTotal: true
-        });
-
-        // Earliest Start (Info Section)
-        results.push({
-            label: 'Earliest Start Tomorrow',
-            valStr: nextStartStr,
-            msg: 'Calculated using 9h 30m rest',
-            isInfo: true
-        });
-        
-        // 6. Check Global Legality for Sticky Footer
-        // A "Global Breach" is if ANY rule is broken, not just the total time
-        const globalBreach = results.some(r => r.isBreach);
-        updateStickyFooter(totalDriving, globalBreach);
+        results.push({ label: 'Total Driving', val: totalDriving, max: CONFIG.maxTotalDriving, isBreach: totalDriving > CONFIG.maxTotalDriving, msg: 'Daily Limit 10h', isMain: true });
+        results.push({ label: 'Duty Spread', val: dutySpread, max: CONFIG.maxSpreadMinutes, isBreach: dutySpread > CONFIG.maxSpreadMinutes, msg: 'Max 14h Day', isMain: true });
+        results.push({ label: 'Earliest Start Tomorrow', valStr: nextStart, isInfo: true, msg: '9h 30m rest applied' });
 
         renderDashboard(results);
-    }
-    
-    function updateStickyFooter(totalMinutes, isBreach) {
-        stickyTotal.textContent = formatTime(totalMinutes);
-        
-        // Update Sticky Status Badge
-        stickyStatus.className = 'status-badge ' + (isBreach ? 'breach' : 'ok');
-        stickyStatus.textContent = isBreach ? 'BREACH' : 'LEGAL';
+        updateSticky(totalDriving, dutySpread, results.some(r => r.isBreach));
     }
 
     function renderDashboard(data) {
         dashboard.innerHTML = '';
-
         data.forEach(item => {
-            let statusClass = item.isBreach ? 'danger' : 'success';
-            let badgeText = item.isBreach ? 'BREACH' : 'OK';
-            let badgeClass = item.isBreach ? 'breach' : 'ok';
+            const status = item.isBreach ? 'danger' : (item.isInfo ? 'info' : 'success');
+            const perc = item.max ? Math.min((item.val / item.max) * 100, 100) : 0;
+            const display = item.valStr || formatTime(item.val);
             
-            // Override for Info items
-            if (item.isInfo) {
-                statusClass = 'info';
-                badgeText = 'INFO';
-                badgeClass = 'info';
-            }
-
-            // Calculate progress bar width
-            // If it's a "Minimum required" (like Break), logic is inverted visually or just calculated differently
-            let percentage = 0;
-            if (item.max > 0 && !item.isInfo) {
-                percentage = Math.min((item.value / item.max) * 100, 100);
-            }
-            
-            // Color of progress bar
-            let barColor = 'var(--success)';
-            if (item.isBreach) barColor = 'var(--danger)';
-            else if (percentage > 90 && !item.isTotal) barColor = 'var(--warning)';
-
-            // Determine what value to show (Calculated formatted string OR standard duration)
-            const displayValue = item.valStr ? item.valStr : formatTime(item.value);
-
-            const html = `
-                <div class="result-item ${statusClass}">
+            dashboard.innerHTML += `
+                <div class="result-item ${status}">
                     <div class="result-header">
                         <span class="result-label">${item.label}</span>
-                        <span class="status-badge ${badgeClass}">${badgeText}</span>
+                        <span class="status-badge ${item.isBreach ? 'breach' : (item.isInfo ? 'info' : 'ok')}">${item.isBreach ? 'BREACH' : (item.isInfo ? 'INFO' : 'OK')}</span>
                     </div>
                     <div class="result-header">
-                        <span class="result-value">${displayValue}</span>
-                        <span style="font-size: 0.8rem; color: var(--text-muted);">${item.msg}</span>
+                        <span class="result-value">${display}</span>
+                        <span style="font-size: 0.75rem; font-weight: 500;">${item.msg}</span>
                     </div>
-                    ${item.max ? `
-                    <div class="progress-container">
-                        <div class="progress-bar" style="width: ${percentage}%; background-color: ${barColor}"></div>
-                    </div>` : ''}
-                </div>
-            `;
-            dashboard.innerHTML += html;
+                    ${item.max ? `<div class="progress-container"><div class="progress-bar" style="width:${perc}%; background:${item.isBreach?'var(--danger)':(perc>85?'var(--warning)':'var(--success)')}"></div></div>` : ''}
+                </div>`;
         });
     }
 
-    function resetForm() {
-        form.reset();
-        if(isOvertimeVisible) toggleBtn.click(); // Hide overtime if open
-        calculate(); // Recalculate to show zeros
+    function updateSticky(drv, dty, breach) {
+        stickyDriving.textContent = formatTime(drv);
+        stickyDuty.textContent = formatTime(dty);
+        stickyStatus.className = 'status-badge ' + (breach ? 'breach' : 'ok');
+        stickyStatus.textContent = breach ? 'BREACH' : 'LEGAL';
     }
 
-    // Initial run
-    calculate();
-
+    function resetForm() {
+        document.getElementById('trackerForm').reset();
+        if(isOvertimeVisible) toggleBtn.click();
+        calculate();
+    }
 </script>
 </body>
 </html>
