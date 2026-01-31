@@ -341,14 +341,23 @@
 
     let isOvertimeVisible = false;
 
+    // Handles logic for formatting input, including auto-adding leading zero
     function formatTimeInput(e) {
         let value = e.target.value.replace(/[^0-9]/g, '');
+        
+        // If user finished typing 3 digits (e.g. 630), convert to 0630
+        if (e.type === 'blur' && value.length === 3) {
+            value = '0' + value;
+        }
+
         if (value.length > 4) value = value.slice(0, 4);
         
+        let formatted = value;
         if (value.length >= 3) {
-            value = value.slice(0, 2) + ':' + value.slice(2);
+            formatted = value.slice(0, 2) + ':' + value.slice(2);
         }
-        e.target.value = value;
+        
+        e.target.value = formatted;
     }
 
     window.onload = () => {
@@ -358,7 +367,13 @@
     document.querySelectorAll('.calc-trigger').forEach(input => {
         input.addEventListener('input', calculate);
         if (input.classList.contains('time-input')) {
+            // Check during typing for colon placement
             input.addEventListener('input', formatTimeInput);
+            // Check when moving to next field for leading zero
+            input.addEventListener('blur', (e) => {
+                formatTimeInput(e);
+                calculate();
+            });
         }
     });
 
@@ -370,11 +385,16 @@
     });
 
     function timeToMinutes(timeStr) {
-        if (!timeStr || !timeStr.includes(':')) return null;
-        const parts = timeStr.split(':');
-        if (parts.length !== 2) return null;
-        const h = parseInt(parts[0]);
-        const m = parseInt(parts[1]);
+        if (!timeStr) return null;
+        let clean = timeStr.replace(/[^0-9]/g, '');
+        
+        // Final fallback for calculation if user left it as 3 digits
+        if (clean.length === 3) clean = '0' + clean;
+        if (clean.length !== 4) return null;
+
+        const h = parseInt(clean.slice(0, 2));
+        const m = parseInt(clean.slice(2));
+        
         if (isNaN(h) || isNaN(m)) return null;
         if (h > 23 || m > 59) return null;
         return h * 60 + m;
